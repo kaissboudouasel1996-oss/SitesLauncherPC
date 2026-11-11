@@ -1,0 +1,437 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; img-src 'self' data: book:; style-src 'self' 'unsafe-inline'; script-src 'self'">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Sites Launcher</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<aside class="side">
+  <div class="brand"><span class="logo">SL</span><div><b>Sites Launcher</b><small>pour Windows</small></div></div>
+  <nav>
+    <button class="nav on" data-page="home">Accueil</button>
+    <button class="nav" data-page="fiche">Fiche technique</button>
+    <button class="nav" data-page="classes">Classes</button>
+    <button class="nav" data-page="timetable">Emploi du temps</button>
+    <button class="nav" data-page="cahier">Cahier de texte</button>
+    <button class="nav" data-page="calendar">Calendrier scolaire</button>
+    <button class="nav" data-page="notes">Notes et rappels</button>
+    <button class="nav" data-page="logins">Connexions</button>
+    <button class="nav" data-page="auth">Authenticator</button>
+    <button class="nav" data-page="backup">Sauvegarde</button>
+    <button class="nav" data-page="settings">Réglages</button>
+    <button class="nav" data-page="books">Livres</button>
+    <button class="nav" data-page="files">Fichiers</button>
+  </nav>
+  <div class="langbar"><button id="langBtn" class="btn" title="Langue / اللغة">العربية</button></div>
+</aside>
+
+<main>
+  <section id="page-home" class="page">
+    <h1>Espace enseignant</h1>
+    <p class="lead" id="today"></p>
+    <div class="sites">
+      <button class="site" data-site="massar">Massar</button>
+      <button class="site" data-site="haraka">Haraka</button>
+      <button class="site" data-site="tabligh">Tabligh</button>
+      <button class="site" data-site="tgr">TGR</button>
+      <button class="site" data-site="nouveaux">Nouveaux Apprentissages</button>
+    </div>
+    <p class="muted">Chaque site s’ouvre dans sa propre fenêtre. Votre connexion est conservée d’un lancement à l’autre.</p>
+  </section>
+
+  <section id="page-fiche" class="page" hidden>
+    <h1>Fiche technique</h1>
+    <p class="lead">Choisissez le PowerPoint de la leçon, puis obtenez la fiche technique en fichier Word, sur une seule page. Tout est tiré des diapositives.</p>
+
+    <div class="card">
+      <h2>1. PowerPoint de la leçon</h2>
+      <p id="pptInfo" class="muted">Aucun PowerPoint choisi.</p>
+      <button id="btnChoose" class="btn">Choisir un PowerPoint</button>
+    </div>
+
+    <div class="card" id="card2">
+      <h2>2. Vérifier les informations</h2>
+      <form id="form" class="grid" autocomplete="off">
+        <label>Niveau (exemple : 3AC)<input name="niveau"></label>
+        <label>Semestre<input name="semestre"></label>
+        <label>Période<input name="periode"></label>
+        <label>Numéro de séance<input name="seance"></label>
+        <label>Numéro d’unité<input name="unite"></label>
+        <label class="wide">Titre de l’unité<input name="uniteTitre"></label>
+        <label>Pages (exemple : 8-9)<input name="pages"></label>
+        <label class="wide">Tâche finale<textarea name="tache" rows="2"></textarea></label>
+        <label class="wide">Titre de la séance<input name="titre"></label>
+        <label class="wide">Objectifs (un par ligne)<textarea name="objectifs" rows="3"></textarea></label>
+        <label class="wide radio"><input type="checkbox" name="useBooks" id="useBooks"> Lire les consignes dans le livre (si le livre est installé : écran Livres)</label>
+      </form>
+      <button id="btnCreate" class="btn primary" disabled>Créer la fiche technique</button>
+      <p id="status" class="muted"></p>
+      <div id="result" class="result" hidden>
+        <button id="btnOpen" class="btn">Ouvrir dans Word</button>
+        <button id="btnShow" class="btn">Afficher dans le dossier</button>
+      </div>
+      <div id="notes" class="notes" hidden></div>
+    </div>
+  </section>
+
+  <section id="page-cahier" class="page" hidden>
+    <h1>Cahier de texte</h1>
+    <p class="lead">Pour chaque jour, les classes de votre emploi du temps et la séance où elles en sont. Touchez une classe pour voir la leçon.</p>
+    <div class="row between">
+      <button id="kPrev" class="btn">◀</button>
+      <input id="kDate" type="date" class="kdate">
+      <button id="kNext" class="btn">▶</button>
+    </div>
+    <div class="row"><button id="kToday" class="btn">Aujourd’hui</button></div>
+    <h2 id="kLabel"></h2>
+    <div id="kContent"></div>
+  </section>
+
+  <section id="page-calendar" class="page" hidden>
+    <h1>Vacances scolaires 2026-2027</h1>
+    <p class="lead">Cliquez sur une vacance pour l’ajouter à votre calendrier (Outlook, Calendrier Windows…).</p>
+    <div class="row"><button id="calAll" class="btn">Ajouter toutes les vacances</button></div>
+    <p id="calMsg" class="muted"></p>
+    <div id="calNext"></div>
+    <div id="calList"></div>
+    <p id="calNote" class="muted"></p>
+  </section>
+
+  <section id="page-backup" class="page" hidden>
+    <h1>Sauvegarde</h1>
+    <p class="lead">Un seul fichier chiffré (AES-256) avec vos classes, notes, emploi du temps et cahier de texte. Il s’échange avec l’application du téléphone, dans les deux sens.</p>
+    <div class="card">
+      <h2>Créer une sauvegarde</h2>
+      <label class="field">Mot de passe (6 caractères au minimum)<input id="bkPw" type="password" autocomplete="new-password"></label>
+      <label class="field">Confirmer le mot de passe<input id="bkPw2" type="password" autocomplete="new-password"></label>
+      <div class="row"><button id="bkCreate" class="btn primary">Créer la sauvegarde</button></div>
+      <p class="muted">Sans le mot de passe, la sauvegarde ne peut pas être ouverte : personne ne peut le retrouver pour vous. Pour la restaurer sur le téléphone, tapez le même mot de passe.</p>
+    </div>
+    <div class="card">
+      <h2>Restaurer une sauvegarde</h2>
+      <p class="muted">Vient du téléphone ou d’un autre PC. Seul ce qui manque ici est ajouté : rien n’est écrasé.</p>
+      <div class="row"><button id="bkPick" class="btn">Choisir le fichier…</button><span id="bkFile" class="muted"></span></div>
+      <label class="field" id="bkRestoreBox" hidden>Mot de passe de la sauvegarde<input id="bkPwR" type="password" autocomplete="off"></label>
+      <div class="row"><button id="bkRestore" class="btn primary" hidden>Restaurer</button></div>
+    </div>
+    <p id="bkMsg" class="muted"></p>
+  </section>
+
+  <section id="page-auth" class="page" hidden>
+    <h1>Authenticator</h1>
+    <p class="lead">Les codes à 6 chiffres de vos comptes (Massar, TGR…), comme Google Authenticator. Cliquez sur un code pour le copier.</p>
+    <div class="row"><button id="aAdd" class="btn primary">+ Ajouter un compte</button><button id="aQrFile" class="btn">Lire un QR code depuis une image…</button><button id="aQrClip" class="btn">Lire un QR code du presse-papiers</button></div>
+    <p id="aMsg" class="muted"></p>
+    <div id="aList" class="alist"></div>
+    <p id="aNote" class="muted"></p>
+  </section>
+
+  <section id="page-logins" class="page" hidden>
+    <h1>Connexions</h1>
+    <p class="lead">Votre identifiant et votre mot de passe pour chaque site : ils sont tapés pour vous quand la page de connexion s’ouvre. Ils ne sont jamais tapés sur une page qui n’appartient pas au site.</p>
+    <p id="lgMsg" class="muted"></p>
+    <div id="lgList" class="lglist"></div>
+    <p id="lgNote" class="muted"></p>
+  </section>
+
+  <section id="page-books" class="page" hidden>
+    <div id="bkShelf">
+      <h1>Livres</h1>
+      <p class="lead">Vos livres scolaires, enregistrés dans l'application. Vous pouvez les lire sans internet.</p>
+      <div class="row"><button id="bkNew" class="btn">+ Ajouter un autre livre</button></div>
+      <p id="bkMsg" class="muted"></p>
+      <div id="bkCards" class="bkcards"></div>
+    </div>
+    <div id="bkReader" class="reader" hidden dir="ltr">
+      <div class="rbar rtop">
+        <button id="rBack" class="rb" title="Livres">←</button>
+        <span id="rTitle" class="rtitle"></span>
+        <button id="rMark" class="rb" title="Marque-pages">☆</button>
+        <button id="rMarks" class="rb" title="Marque-pages">🔖</button>
+        <button id="rSpread" class="rb" title="Affichage">▯▯</button>
+        <button id="rTone" class="rb" title="Affichage">◐</button>
+        <button id="rFull" class="rb" title="Plein écran">⛶</button>
+      </div>
+      <div id="rStage" class="rstage"><div id="rPages" class="rpages"></div></div>
+      <div class="rbar rbottom">
+        <input id="rSeek" type="range" min="0" value="0">
+        <div class="rrow">
+          <button id="rPrev" class="rb">◀</button>
+          <span id="rLabel" class="rlabel"></span>
+          <button id="rGo" class="rb">Aller à</button>
+          <button id="rZoomOut" class="rb" title="Zoom −">−</button>
+          <button id="rZoomIn" class="rb" title="Zoom +">+</button>
+          <button id="rNext" class="rb">▶</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="page-files" class="page" hidden>
+    <h1>Fichiers</h1>
+    <p class="lead">Ce que vous téléchargez depuis les sites (Massar, Haraka…) est rangé ici, avec le bon nom et le bon type même quand le site se trompe.</p>
+    <div class="row">
+      <button id="fFolder" class="btn primary">Ouvrir le dossier</button>
+      <button id="fAdd" class="btn">+ Ajouter des fichiers</button>
+      <button id="fDel" class="btn danger" hidden>Supprimer la sélection</button>
+    </div>
+    <input id="fSearch" class="search" placeholder="Rechercher un fichier">
+    <p id="fMsg" class="muted"></p>
+    <div id="fList" class="flist"></div>
+  </section>
+
+  <section id="page-settings" class="page" hidden>
+    <h1>Réglages</h1>
+    <div class="card">
+      <h2>Langue</h2>
+      <div class="row">
+        <label class="radio"><input type="radio" name="setLang" value="fr"> Français</label>
+        <label class="radio"><input type="radio" name="setLang" value="ar"> العربية</label>
+      </div>
+    </div>
+    <div class="card">
+      <h2>Thème</h2>
+      <div class="row">
+        <label class="radio"><input type="radio" name="setTheme" value="auto"> Automatique (suit Windows)</label>
+        <label class="radio"><input type="radio" name="setTheme" value="light"> Clair</label>
+        <label class="radio"><input type="radio" name="setTheme" value="dark"> Sombre</label>
+      </div>
+    </div>
+    <div class="card">
+      <h2>Mises à jour</h2>
+      <p class="muted" id="setVersion"></p>
+      <label class="radio"><input type="checkbox" id="setAutoUpdate"> Vérifier automatiquement les mises à jour</label>
+      <div class="row"><button id="setCheck" class="btn">Rechercher une mise à jour</button><button id="setInstall" class="btn primary" hidden>Redémarrer et installer</button></div>
+      <p id="setUpdMsg" class="muted"></p>
+    </div>
+    <div class="card">
+      <h2>Données</h2>
+      <p class="muted">Vos classes, notes, fichiers et réglages sont dans ce dossier. Pour les copier sur un autre PC ou sur le téléphone, utilisez Sauvegarde.</p>
+      <div class="row"><button id="setFolder" class="btn">Ouvrir le dossier des données</button></div>
+    </div>
+  </section>
+
+  <section id="page-notes" class="page" hidden>
+    <h1>Notes et rappels</h1>
+    <p class="lead">Un carnet. Une note peut avoir un rappel : une notification Windows s’affiche à l’heure choisie (l’application doit être ouverte ; un rappel manqué s’affiche au lancement suivant).</p>
+    <div class="row"><button id="nNew" class="btn primary">+ Nouvelle note</button></div>
+    <div id="nList" class="nlist"></div>
+  </section>
+
+  <section id="page-timetable" class="page" hidden>
+    <h1>Emploi du temps</h1>
+    <p class="lead">Cliquez sur une case pour écrire la classe et la salle. Cliquez sur une heure pour la modifier.</p>
+    <div class="row">
+      <button id="tPdf" class="btn primary">Exporter en PDF</button>
+      <button id="tPhoto" class="btn">Importer depuis une photo</button>
+      <button id="tClip" class="btn">Depuis le presse-papiers</button>
+      <button id="tClear" class="btn danger">Vider l’emploi du temps</button>
+    </div>
+    <p id="tStatus" class="muted"></p>
+    <div class="twrap"><table id="tTable" class="tt"></table></div>
+  </section>
+
+  <section id="page-classes" class="page" hidden>
+    <div id="clsList">
+      <h1>Listes de classe</h1>
+      <p class="lead">Enregistrées sur votre PC : vous pouvez les lire sans internet.</p>
+      <div class="row">
+        <button id="clsImport" class="btn primary">+ Importer depuis un fichier</button>
+        <button id="clsType" class="btn">+ Saisir ou coller les noms</button>
+      </div>
+      <p id="clsMsg" class="muted"></p>
+      <div id="clsCards" class="cards"></div>
+    </div>
+
+    <div id="clsNew" hidden>
+      <h1 id="clsNewTitle">Nouvelle classe</h1>
+      <div class="card">
+        <label class="field">Nom de la classe (exemple : 3APIC-2)<input id="clsName"></label>
+        <label class="field" id="clsNamesBox" hidden>Un élève par ligne<textarea id="clsNames" rows="12"></textarea></label>
+        <div class="row">
+          <button id="clsNewOk" class="btn primary">Enregistrer</button>
+          <button id="clsNewCancel" class="btn">Annuler</button>
+        </div>
+        <p id="clsNewMsg" class="muted"></p>
+      </div>
+    </div>
+
+    <div id="clsSeating" hidden>
+      <div class="row between">
+        <button id="sBack" class="btn">← Fiche de la classe</button>
+        <div class="row">
+          <button id="sFill" class="btn">Placer selon la liste</button>
+          <button id="sClear" class="btn">Tout vider</button>
+          <button id="sPdf" class="btn primary">PDF</button>
+        </div>
+      </div>
+      <h1 id="sTitle"></h1>
+      <p id="sInfo" class="muted"></p>
+      <button id="sBoard" class="board" title="Leçon du jour"></button>
+      <div id="sRoom" class="room"></div>
+      <div class="teacher">Bureau</div>
+    </div>
+
+    <div id="clsDetail" hidden>
+      <div class="row between">
+        <button id="dBack" class="btn">← Classes</button>
+        <div class="row">
+          <button id="dPdf" class="btn primary">Fiche de suivi (PDF)</button>
+          <select id="dCc" title="Nombre de colonnes de contrôle continu (CC)"><option value="1">1 CC</option><option value="2" selected>2 CC</option><option value="3">3 CC</option><option value="4">4 CC</option><option value="5">5 CC</option></select>
+          <button id="dSeating" class="btn">Plan de classe</button>
+          <button id="dGrades" class="btn">Feuille de notes (Excel)</button>
+          <button id="dDelete" class="btn danger">Supprimer</button>
+        </div>
+      </div>
+      <h1 id="dTitle"></h1>
+      <p id="dStatus" class="muted"></p>
+      <div class="card">
+        <h2>Fiche de suivi</h2>
+        <div class="grid">
+          <label>Direction provinciale<input id="dDirection"></label>
+          <label>Matière<select id="dSubject"></select></label>
+          <label>Année scolaire<input id="dYear"></label>
+          <label>Établissement<input id="dSchool"></label>
+          <label>Classe<input id="dName"></label>
+        </div>
+      </div>
+      <input id="dSearch" class="search" placeholder="Rechercher un élève">
+      <p id="dCount" class="muted"></p>
+      <div id="dStudents"></div>
+    </div>
+  </section>
+</main>
+
+<dialog id="dlgNote">
+  <form method="dialog" id="fNote">
+    <h2 id="nTitleH">Nouvelle note</h2>
+    <label class="field">Titre<input id="nTitle"></label>
+    <label class="field">Détails (facultatif)<textarea id="nText" rows="4"></textarea></label>
+    <label class="field">Rappel<input id="nWhen" type="datetime-local"></label>
+    <div class="row">
+      <button id="nSave" class="btn primary" value="ok">Enregistrer</button>
+      <button id="nCancel" class="btn" value="cancel" formnovalidate>Annuler</button>
+      <button id="nDelete" class="btn danger" type="button" hidden>Supprimer</button>
+    </div>
+  </form>
+</dialog>
+
+<dialog id="dlgSeat">
+  <form method="dialog">
+    <h2 id="seatTitle"></h2>
+    <div id="seatList" class="pick"></div>
+    <div class="row"><button class="btn" value="cancel" formnovalidate>Annuler</button></div>
+  </form>
+</dialog>
+
+<dialog id="dlgLesson">
+  <form method="dialog">
+    <h2 id="lTitle"></h2>
+    <div id="lBody" class="lesson"></div>
+    <p id="lHint" class="muted"></p>
+    <div class="row">
+      <button id="lCopy" class="btn primary" type="button">Copier</button>
+      <button id="lSkip" class="btn" type="button">Cette séance n’a pas eu lieu</button>
+      <button class="btn" value="close" formnovalidate>Fermer</button>
+    </div>
+    <p id="lMsg" class="muted"></p>
+  </form>
+</dialog>
+
+<dialog id="dlgObj">
+  <form method="dialog">
+    <h2>Modifier l’objectif</h2>
+    <textarea id="oText" rows="4"></textarea>
+    <div class="row">
+      <button class="btn primary" value="ok">Enregistrer</button>
+      <button id="oBook" class="btn" type="button" hidden>Texte du livre</button>
+      <button class="btn" value="cancel" formnovalidate>Annuler</button>
+    </div>
+  </form>
+</dialog>
+
+<dialog id="dlgArabic">
+  <form method="dialog">
+    <h2>الكتابة بالعربية</h2>
+    <p class="muted">بطاقة المتابعة بالعربية: اكتب هذه الأسماء بالعربية (تُحفظ لاستعمالها لاحقاً).</p>
+    <div id="arList"></div>
+    <div class="row">
+      <button id="arOk" class="btn primary" type="button">متابعة</button>
+      <button id="arSkip" class="btn" type="button">تخطّي</button>
+    </div>
+  </form>
+</dialog>
+
+<dialog id="dlgBook">
+  <form method="dialog">
+    <h2 id="bkDlgTitle"></h2>
+    <div id="bkDlgBody"></div>
+    <div class="row"><button class="btn" value="cancel" formnovalidate>Annuler</button></div>
+  </form>
+</dialog>
+
+<dialog id="dlgAbout">
+  <form method="dialog">
+    <h2 class="about-name">KAISS BOUDOUASEL</h2>
+    <p><a href="#" id="abMail" class="about-line">boudouasel12@gmail.com</a></p>
+    <p><a href="#" id="abPhone" class="about-line">0671677162</a></p>
+    <p class="muted" id="abVersion"></p>
+    <div class="row"><button class="btn primary" value="ok">OK</button></div>
+  </form>
+</dialog>
+
+<dialog id="dlgAsk">
+  <form method="dialog">
+    <h2 id="askTitle"></h2>
+    <p id="askText" class="muted"></p>
+    <div class="row"><button id="askA" class="btn primary" type="button"></button><button id="askB" class="btn primary" type="button"></button><button class="btn" value="cancel" formnovalidate>Annuler</button></div>
+  </form>
+</dialog>
+
+<dialog id="dlgAuth">
+  <form method="dialog">
+    <h2>Ajouter un compte</h2>
+    <label class="field">Nom (exemple : Massar)<input id="aName"></label>
+    <label class="field">Clé secrète, lien otpauth:// ou lien d’export Google Authenticator<textarea id="aKey" rows="3" spellcheck="false"></textarea></label>
+    <div class="row">
+      <button id="aOk" class="btn primary" type="button">Ajouter</button>
+      <button class="btn" value="cancel" formnovalidate>Annuler</button>
+    </div>
+    <p id="aDlgMsg" class="muted"></p>
+  </form>
+</dialog>
+
+<dialog id="dlgCell">
+  <form method="dialog">
+    <h2 id="cTitle"></h2>
+    <label class="field"><span id="cLabel"></span><textarea id="cText" rows="3"></textarea></label>
+    <div id="cClassesBox" class="field"><span>Choisir une de mes classes</span><select id="cClasses"></select></div>
+    <div class="row">
+      <button class="btn primary" value="ok">Enregistrer</button>
+      <button id="cClear" class="btn" type="button">Vider</button>
+      <button class="btn" value="cancel" formnovalidate>Annuler</button>
+    </div>
+  </form>
+</dialog>
+<script src="ar-data.js"></script>
+<script src="i18n-lib.js"></script>
+<script src="i18n.js"></script>
+<script src="nav.js"></script>
+<script src="fiche.js"></script>
+<script src="classes.js"></script>
+<script src="notes.js"></script>
+<script src="timetable.js"></script>
+<script src="cahier.js"></script>
+<script src="seating.js"></script>
+<script src="calendar.js"></script>
+<script src="backup.js"></script>
+<script src="auth.js"></script>
+<script src="logins.js"></script>
+<script src="files.js"></script>
+<script src="books.js"></script>
+<script src="settings.js"></script>
+</body>
+</html>

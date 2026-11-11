@@ -1,0 +1,10 @@
+Livres inclus dans l'installateur (facultatif)
+==============================================
+Pour que les livres 1AC et 3AC soient déjà dans l'application, copiez ici les dossiers des pages
+depuis le projet Android (app/src/main/assets/books/) :
+
+    books/1ac/p001.webp, p002.webp, ...
+    books/3ac/p001.webp, p002.webp, ...
+
+puis fabriquez l'application. Sinon, laissez ce dossier tel quel : on peut aussi importer les pages
+depuis l'écran « Livres » de l'application (bouton « Importer les pages du livre »).

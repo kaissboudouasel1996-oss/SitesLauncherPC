@@ -1,1 +1,52 @@
-test
+# Sites Launcher pour Windows
+
+Version Windows de Sites Launcher (Electron).
+
+## Ce qui est déjà là
+- **Accueil** : Massar, Haraka, Tabligh, TGR, Nouveaux Apprentissages (chaque site dans sa fenêtre, la connexion est conservée).
+- **Fiche technique** : PowerPoint de la leçon -> fiche Word sur une seule page. Étape 8 : le moteur est maintenant celui de l'application v75 (portage complet de FicheBuilder) : titre, pages et période tirés du sommaire du livre 1AC/3AC, Compréhension détaillée et de l'oral (étapes, « penser à voix haute », une ligne par activité, correction), actes de parole, rappels, consignes en infinitif, regroupement des consignes semblables, durées, en-tête Période / Page.
+- **Classes** (étape 2) :
+  - importer une liste depuis Excel (.xlsx), CSV ou export Massar (page web enregistrée en .xls), ou coller les noms ;
+  - fiche de suivi : discipline et devoirs avec + / −, remarques, recherche, enregistrement automatique ;
+  - export de la **fiche de suivi en PDF** (A4, même modèle que sur le téléphone) ;
+  - **feuille de notes Excel** (étape 3) : liste + 1 à 5 colonnes CC, moyenne de chaque élève et de la classe calculées par Excel, notes limitées à 0–20 ;
+  - les listes sont enregistrées dans `classes.json`, au même format que l'application Android.
+
+- **Notes et rappels** (étape 4) : carnet avec rappel par notification Windows (l'application doit être ouverte ; un rappel manqué s'affiche au lancement suivant).
+- **Emploi du temps** (étape 4) : lundi–samedi par heure, cases libres, choix d'une de vos classes, heures modifiables, export PDF paysage.
+
+- **Cahier de texte** (étape 5) : pour chaque jour, les classes de l'emploi du temps et la séance où elles en sont (période, unité, tâche finale, objectifs, pages du livre 1AC/3AC) ; jours fériés et vacances 2026-2027, jours sans cours, séance non assurée (la suivante reprend le contenu), révisions avant les vacances, objectifs modifiables, copie du texte. Les objectifs d'une fiche technique que vous créez complètent le cahier. Les classes doivent s'appeler comme 1APIC3 dans l'emploi du temps.
+- **Plan de classe** (étape 5) : depuis une classe, 4 rangées de 5 tables de 2 places ; clic sur une place pour choisir l'élève (échange automatique), « placer selon la liste », « tout vider », tableau avec la leçon du jour, export PDF paysage. Vue de dessus (la vue 3D du téléphone n'est pas reprise).
+
+- **Calendrier scolaire 2026-2027** (étape 6) : les 15 vacances et jours fériés avec leurs dates, la prochaine vacance, « en cours / dans N jours » ; un clic ajoute la vacance à votre calendrier (fichier .ics ouvert dans Outlook ou Calendrier Windows), ou toutes d'un coup.
+- **Sauvegarde chiffrée** (étape 7) : un fichier `.mdb` (AES-256-GCM), le même format que l'application du téléphone, dans les deux sens. Contient classes, notes, emploi du temps, cahier de texte (et, gardés tels quels pour plus tard : identifiants, comptes Authenticator, contacts, réglages, fichiers). La restauration n'ajoute que ce qui manque, sans rien écraser, et un ancien rappel ne sonne pas après une restauration. Mot de passe de 6 caractères minimum, non récupérable.
+
+L'icône est dans `build/icon.ico` (modifiable). Les .exe ne sont pas signés : Windows peut afficher « éditeur inconnu » (cliquez sur « Informations complémentaires » puis « Exécuter quand même »).
+- **Authenticator** (étape 10) : codes à 6 chiffres comme Google Authenticator (SHA1/256/512, 6 à 8 chiffres, vérifié avec les vecteurs officiels RFC 6238) ; ajout par clé secrète, lien otpauth:// ou lien d'export Google Authenticator ; clic = copier le code. Les clés sont **chiffrées sur le disque** avec la protection de la session Windows (comme les identifiants gardés depuis une sauvegarde du téléphone) et ne sont jamais envoyées à l'écran. Pas encore de lecture d'un QR code depuis une image.
+- **Connexions** (étape 11) : un identifiant et un mot de passe par site (Massar, Haraka, Tabligh, TGR, Nouveaux Apprentissages), chiffrés sur le disque avec la protection de la session Windows et jamais renvoyés à l'écran. À l'ouverture de la page de connexion, ils sont tapés pour vous ; si « Se connecter automatiquement » est coché, « Connexion » est aussi pressé (une fois par minute au plus, pour qu'un mauvais mot de passe ne bloque jamais le compte). Différence avec le téléphone, par sécurité : rien n'est tapé sur une page qui n'appartient pas au site (une redirection vers un autre domaine ne reçoit rien). Chaque fenêtre de site a un menu **Connexion** (remplir, connexion auto, gérer les identifiants, **codes Authenticator** qui remplissent le champ sélectionné et se copient, le presse-papiers étant vidé au bout d'une minute) et un menu **Page**.
+- **Fichiers** (étape 12) : tout ce que vous téléchargez depuis les sites est rangé dans le dossier de l'application, sans boîte « Enregistrer sous ». Le nom et le type viennent du contenu réel, comme sur le téléphone : une adresse en `.php` qui envoie un PDF donne `.pdf`, un « Excel » qui est en fait une page web avec un tableau devient un vrai `.xlsx` (arabe en windows-1256 lu correctement, codes comme « 007 » gardés en texte), une page « session expirée » n'est pas gardée sous un faux nom. Notification au téléchargement (un clic ouvre le fichier). La page Fichiers : liste, recherche, ouvrir, afficher dans l'explorateur, supprimer (par sélection), ajouter des fichiers du PC, ouvrir le dossier.
+- **Arabe** (étape 13) : le bouton **العربية / Français** en bas de la barre latérale change la langue et met toute l'interface en miroir (menu à droite, textes de droite à gauche). Le vocabulaire est celui de l'application du téléphone (sa table de traduction est reprise), complété pour les écrans du PC ; les noms, les objectifs du livre et les documents en français (fiche technique Word) restent tels quels. Les boîtes de dialogue, menus des sites, notifications et PDF suivent la langue. **Fiche de suivi arabe** : tableau en miroir (logo et colonne « رقم » à droite, noms et remarques alignés à droite), libellés arabes, et orthographe arabe de la direction provinciale et de l'établissement (province connue, sinon demandée une fois puis mémorisée). Emploi du temps et plan de classe en PDF suivent aussi la langue. Pour régénérer le dictionnaire : `python3 tools/build_ar.py` (textes PC dans `tools/ar_extra.py`).
+- **Livres** (étape 14) : étagère (couverture, nombre de pages, barre de progression, « Continuer la lecture · Page X sur N ») et lecteur plein écran : tourner les pages (clics sur les côtés, flèches, molette, curseur), **Aller à la page**, **marque-pages** (étoile + liste), **zoom** (boutons, Ctrl + molette, double clic), **double page** comme un vrai livre (couverture seule), tons **Normal / Sépia / Nuit**, plein écran (F), position mémorisée. Les pages sont des images `p001.webp, p002.webp…` comme sur le téléphone. **Elles ne sont pas dans le projet** : copiez `app/src/main/assets/books/1ac` et `3ac` du projet Android dans le dossier `books/` avant de fabriquer l'application (voir `books/LISEZMOI.txt`) pour qu'elles soient dans l'installateur, ou importez-les depuis l'écran Livres (« Importer les pages du livre » / « Importer le dossier des pages »). On peut aussi ajouter ses propres livres (autre niveau, cahier d'activités). Pas encore : la lecture automatique des consignes dans les pages (reconnaissance de texte), qui complète la fiche technique sur le téléphone.
+- **Réglages, À propos, mises à jour** (étape 15) : page **Réglages** (langue, thème Automatique / Clair / Sombre, mises à jour, dossier des données). Thème Automatique = celui de Windows ; un choix explicite l'emporte. **Mises à jour automatiques** (électron-updater, publication GitHub) : vérification discrète 20 s après le démarrage (désactivable), téléchargement, installation à la fermeture ; seulement dans la version installée, pas dans la portable. Écran caché **À propos** : cliquer 7 fois de suite sur « Sites Launcher » en haut de la barre latérale. Signature du `.exe` et publication d'une version : voir **SIGNATURE.md** (un certificat de signature s'achète ; le projet est prêt à l'utiliser). Les entrées « bientôt » (Groupe / Chat, Assistant IA) ont été retirées de la barre latérale.
+
+- **Reconnaissance de texte et QR code** (étape 16), avec la reconnaissance de texte **intégrée à Windows 10/11** (hors ligne, rien à installer ; elle utilise les langues installées dans Windows : ajoutez le **français** dans Paramètres > Heure et langue > Langue et région si besoin) :
+  - **Emploi du temps depuis une photo** (page Emploi du temps : « Importer depuis une photo » ou « Depuis le presse-papiers » pour une capture d'écran Win + Maj + S) : mêmes règles que sur le téléphone (heures, classes réparées, salles, jours libres) ; si les horaires ne sont pas lisibles, l'application demande de quel côté sont les jours ; confirmation avant de remplacer l'emploi du temps.
+  - **Consignes du livre dans la fiche technique** : case « Lire les consignes dans le livre » (si le livre du niveau est installé). Seules les pages utiles sont lues, une seule fois (mémorisées) ; la consigne n'est utilisée que si elle est sûre, et la fiche le signale pour vérification.
+  - **QR code depuis une image** (Authenticator) : lecteur écrit pour l'application, testé sur des codes de toutes tailles (versions 1 à 40), tournés, inclinés, bruités, inversés ou abîmés. Depuis un fichier ou le presse-papiers.
+
+## Pas prévu
+Verrouillage de l'application, Groupe / Chat, Assistant IA et Scanner n'ont **pas** été demandés pour la version PC.
+
+## Obtenir le .exe (sans rien installer sur votre PC)
+1. Créez un dépôt GitHub (privé si vous voulez) et envoyez-y le contenu de ce dossier.
+2. Onglet **Actions** > **Build Windows app** > **Run workflow**.
+3. GitHub lance les tests, fabrique les .exe, puis **démarre l'application empaquetée** en mode test (écrans, PDF, sauvegarde, lecteur de QR code ; la reconnaissance de texte de Windows est essayée et signalée par un avertissement « WARN » sans bloquer). Si cette étape échoue, ouvrez l'artefact **selftest-result** : il dit ce qui ne va pas.
+4. Quand c'est vert, ouvrez l'exécution et téléchargez l'artefact **SitesLauncher-Windows** :
+   - `SitesLauncher-Setup-x.y.z.exe` : installateur
+   - `SitesLauncher-Portable-x.y.z.exe` : un seul fichier, sans installation
+
+## Le construire vous-même (Windows, Node 20)
+    npm install
+    npm test
+    npm start        # lancer l'application
+    npm run dist     # fabriquer les .exe dans le dossier dist

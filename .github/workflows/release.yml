@@ -1,0 +1,40 @@
+name: Release Windows app
+
+# Publishes a new version: push a tag like v7.4.0 (the number must be the one of package.json).
+# The installed applications find it by themselves (Réglages > Mises à jour).
+on:
+  push:
+    tags: ['v*']
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - run: npm install
+      - run: npm test
+
+      # Optional signature: add the secrets CSC_LINK (the .pfx certificate, as a base64 text or a link) and CSC_KEY_PASSWORD
+      # to the repository (Settings > Secrets and variables > Actions). Without them the .exe files are published unsigned.
+      - name: Build and publish
+        run: npm run release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          CSC_LINK: ${{ secrets.CSC_LINK }}
+          CSC_KEY_PASSWORD: ${{ secrets.CSC_KEY_PASSWORD }}
+
+      - name: Smoke test of the packaged app
+        shell: pwsh
+        run: |
+          $exe = Get-ChildItem "dist\win-unpacked" -Filter "*.exe" | Where-Object { $_.Name -notmatch "Uninstall|elevate" } | Select-Object -First 1
+          $result = Join-Path $PWD "selftest.txt"
+          $p = Start-Process -FilePath $exe.FullName -ArgumentList "--selftest=$result" -PassThru
+          if (-not $p.WaitForExit(120000)) { $p.Kill() }
+          if (Test-Path $result) { Get-Content $result }
+          if (-not ((Test-Path $result) -and (Select-String -Path $result -Pattern "SELFTEST OK" -Quiet))) { exit 1 }

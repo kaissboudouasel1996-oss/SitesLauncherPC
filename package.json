@@ -1,0 +1,63 @@
+{
+  "name": "sites-launcher-pc",
+  "version": "7.5.0",
+  "description": "Sites Launcher pour Windows",
+  "main": "main.js",
+  "author": "Sites Launcher",
+  "license": "UNLICENSED",
+  "scripts": {
+    "start": "electron .",
+    "test": "node test/test.js && node test/test_classes.js && node test/test_notes_timetable.js && node test/test_cahier_seating.js && node test/test_holidays.js && node test/test_backup.js && node test/test_builder.js && node test/test_books.js && node test/test_files.js && node test/test_ocr.js && node test/test_qr.js && node test/test_sites.js && node test/test_totp.js && node test/test_i18n.js && node test/test_main.js",
+    "dist": "electron-builder --win --x64 --publish never",
+    "release": "electron-builder --win --x64 --publish always"
+  },
+  "devDependencies": {
+    "electron": "33.2.1",
+    "electron-builder": "25.1.8"
+  },
+  "build": {
+    "appId": "ma.sites.launcher.pc",
+    "productName": "Sites Launcher",
+    "extraResources": [
+      {
+        "from": "books",
+        "to": "books"
+      }
+    ],
+    "files": [
+      "main.js",
+      "preload.js",
+      "src/**/*",
+      "renderer/**/*",
+      "assets/**/*",
+      "package.json"
+    ],
+    "win": {
+      "target": [
+        "nsis",
+        "portable"
+      ],
+      "icon": "build/icon.ico"
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "artifactName": "SitesLauncher-Setup-${version}.${ext}",
+      "installerIcon": "build/icon.ico",
+      "uninstallerIcon": "build/icon.ico",
+      "shortcutName": "Sites Launcher",
+      "createDesktopShortcut": true
+    },
+    "portable": {
+      "artifactName": "SitesLauncher-Portable-${version}.${ext}"
+    },
+    "publish": [
+      {
+        "provider": "github"
+      }
+    ]
+  },
+  "dependencies": {
+    "electron-updater": "^6.3.9"
+  }
+}

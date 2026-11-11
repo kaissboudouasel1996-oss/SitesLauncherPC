@@ -1,0 +1,51 @@
+name: Build Windows app
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main, master]
+
+jobs:
+  build:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Install
+        run: npm install
+
+      - name: Run the tests
+        run: npm test
+
+      - name: Build the Windows installer and portable exe
+        run: npm run dist
+
+      # The packaged application is started once, in test mode: it loads every screen, creates a PDF and a backup.
+      - name: Smoke test of the packaged app
+        shell: pwsh
+        run: |
+          $exe = Get-ChildItem "dist\win-unpacked" -Filter "*.exe" | Where-Object { $_.Name -notmatch "Uninstall|elevate" } | Select-Object -First 1
+          Write-Host "Starting $($exe.FullName)"
+          $result = Join-Path $PWD "selftest.txt"
+          $p = Start-Process -FilePath $exe.FullName -ArgumentList "--selftest=$result" -PassThru
+          if (-not $p.WaitForExit(120000)) { $p.Kill(); Write-Host "The app did not stop in 120 s" }
+          if (Test-Path $result) { Get-Content $result } else { Write-Host "No result file written" }
+          if (-not ((Test-Path $result) -and (Select-String -Path $result -Pattern "SELFTEST OK" -Quiet))) { exit 1 }
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: SitesLauncher-Windows
+          path: |
+            dist/SitesLauncher-Setup-*.exe
+            dist/SitesLauncher-Portable-*.exe
+
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: selftest-result
+          path: selftest.txt
+          if-no-files-found: ignore
