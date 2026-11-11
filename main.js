@@ -94,7 +94,7 @@ let lastSaved = null;
 function createWindow() {
   Menu.setApplicationMenu(null);
   win = new BrowserWindow({
-    width: 1100, height: 760, minWidth: 820, minHeight: 560, title: 'Sites Launcher', backgroundColor: '#f4f6f9', icon: path.join(__dirname, 'assets', 'icon.png'),
+    width: 1100, height: 760, minWidth: 820, minHeight: 560, title: 'Madrassa', backgroundColor: '#f4f6f9', icon: path.join(__dirname, 'assets', 'icon.png'),
     webPreferences: { preload: path.join(__dirname, 'preload.js'), contextIsolation: true, nodeIntegration: false, sandbox: true }
   });
   win.loadFile(path.join(__dirname, 'renderer', 'index.html'));
@@ -620,7 +620,7 @@ ipcMain.handle('backup:restore', (_e, password) => {
 });
 
 
-// ---------- self test of the packaged app (used by the build on GitHub): `Sites Launcher.exe --selftest=result.txt` ----------
+// ---------- self test of the packaged app (used by the build on GitHub): `Madrassa.exe --selftest=result.txt` ----------
 const selftestArg = process.argv.find((a) => a.startsWith('--selftest='));
 async function selfTest(file) {
   const log = [];

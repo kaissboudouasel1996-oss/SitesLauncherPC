@@ -38,10 +38,10 @@ jobs:
 
       - uses: actions/upload-artifact@v4
         with:
-          name: SitesLauncher-Windows
+          name: Madrassa-Windows
           path: |
-            dist/SitesLauncher-Setup-*.exe
-            dist/SitesLauncher-Portable-*.exe
+            dist/Madrassa-Setup-*.exe
+            dist/Madrassa-Portable-*.exe
 
       - uses: actions/upload-artifact@v4
         if: always()

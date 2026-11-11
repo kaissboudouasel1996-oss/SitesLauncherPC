@@ -2,12 +2,28 @@
 """Arabic texts that only exist on the PC version (the phone's table is joined in by build_ar.py).
 French text -> Arabic. Same vocabulary as the phone's Arabic screens."""
 EXACT = {
+ # accueil Madrassa (étape 17)
+ 'Pédagogie': 'التدريس',
+ 'Services officiels': 'الخدمات الرسمية',
+ 'Outils': 'الأدوات',
+ 'Séances du jour et programme': 'حصص اليوم والبرنامج',
+ 'Votre semaine, heure par heure': 'أسبوعك ساعة بساعة',
+ 'Du PowerPoint à la fiche Word': 'من العرض التقديمي إلى جذاذة Word',
+ 'Listes, notes et plan de classe': 'اللوائح والنقط ومخطط القسم',
+ 'Vacances et jours fériés': 'العطل والأعياد',
+ 'Lecture sans internet': 'القراءة بدون إنترنت',
+ 'Site officiel': 'موقع رسمي',
+ 'Carnet et rappels': 'مفكرة وتذكيرات',
+ 'Vos téléchargements': 'تحميلاتك',
+ 'Identifiants des sites': 'معرّفات المواقع',
+ 'Codes à 6 chiffres': 'رموز من 6 أرقام',
+ 'Un seul fichier chiffré': 'ملف واحد مشفّر',
  # navigation and pages
  'Accueil': 'الرئيسية', 'Espace enseignant': 'فضاء الأستاذ', 'Classes': 'الأقسام', 'Connexions': 'تسجيل الدخول',
  'Authenticator': 'المصادقة (Authenticator)', 'Calendrier scolaire': 'التقويم الدراسي', 'Groupe / Chat': 'المجموعة / الدردشة',
  'Assistant IA': 'مساعد الذكاء الاصطناعي', 'bientôt': 'قريباً', 'Fichiers': 'الملفات', 'Sauvegarde': 'النسخ الاحتياطي',
  'Notes et rappels': 'ملاحظات وتذكيرات', 'Emploi du temps': 'استعمال الزمن', 'Cahier de texte': 'دفتر النصوص', 'Fiche technique': 'الجذاذة',
- 'Sites Launcher': 'Sites Launcher', 'pour Windows': 'لنظام Windows',
+ 'Madrassa': 'مدرسة', 'pour Windows': 'لنظام Windows',
  'Massar': 'مسار', 'Haraka': 'حركة', 'Tabligh': 'تبليغ', 'TGR': 'الخزينة العامة', 'Nouveaux Apprentissages': 'التعلمات الجديدة',
  'Chaque site s’ouvre dans sa propre fenêtre. Votre connexion est conservée d’un lancement à l’autre.': 'يُفتح كل موقع في نافذة خاصة به، ويُحفظ تسجيل دخولك من مرة لأخرى.',
  # fiche technique page

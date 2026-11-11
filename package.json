@@ -1,9 +1,9 @@
 {
   "name": "sites-launcher-pc",
   "version": "7.5.0",
-  "description": "Sites Launcher pour Windows",
+  "description": "Madrassa pour Windows",
   "main": "main.js",
-  "author": "Sites Launcher",
+  "author": "Madrassa",
   "license": "UNLICENSED",
   "scripts": {
     "start": "electron .",
@@ -17,7 +17,7 @@
   },
   "build": {
     "appId": "ma.sites.launcher.pc",
-    "productName": "Sites Launcher",
+    "productName": "Madrassa",
     "extraResources": [
       {
         "from": "books",
@@ -42,14 +42,14 @@
     "nsis": {
       "oneClick": false,
       "allowToChangeInstallationDirectory": true,
-      "artifactName": "SitesLauncher-Setup-${version}.${ext}",
+      "artifactName": "Madrassa-Setup-${version}.${ext}",
       "installerIcon": "build/icon.ico",
       "uninstallerIcon": "build/icon.ico",
-      "shortcutName": "Sites Launcher",
+      "shortcutName": "Madrassa",
       "createDesktopShortcut": true
     },
     "portable": {
-      "artifactName": "SitesLauncher-Portable-${version}.${ext}"
+      "artifactName": "Madrassa-Portable-${version}.${ext}"
     },
     "publish": [
       {

@@ -19,7 +19,8 @@ function showPage(name) {
 }
 
 document.querySelectorAll('.nav[data-page]').forEach((b) => b.addEventListener('click', () => showPage(b.dataset.page)));
-document.querySelectorAll('.site').forEach((b) => b.addEventListener('click', () => window.api.openSite(b.dataset.site)));
+document.querySelectorAll('[data-site]').forEach((b) => b.addEventListener('click', () => window.api.openSite(b.dataset.site)));
+document.querySelectorAll('[data-go]').forEach((b) => b.addEventListener('click', () => showPage(b.dataset.go)));
 window.api.on('nav', (name) => { if (pages.includes(name)) showPage(name); });
 
 (window.I18N.ready || Promise.resolve()).then(() => {

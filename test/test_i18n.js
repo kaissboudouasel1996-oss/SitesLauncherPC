@@ -47,7 +47,7 @@ const html = fs.readFileSync(path.join(__dirname, '..', 'renderer', 'index.html'
 const texts = new Set();
 for (const m of html.matchAll(/>([^<>]+)</g)) texts.add(m[1].replace(/\s+/g, ' ').trim());
 for (const m of html.matchAll(/(?:placeholder|title)="([^"]+)"/g)) texts.add(m[1]);
-const KEEP = new Set(['SL', 'Sites Launcher', 'PDF', 'Langue / اللغة', 'العربية', 'Français', 'KAISS BOUDOUASEL', 'boudouasel12@gmail.com', '0671677162']);
+const KEEP = new Set(['Madrassa', 'PDF', 'Langue / اللغة', 'العربية', 'Français', 'KAISS BOUDOUASEL', 'boudouasel12@gmail.com', '0671677162']);
 const holes = [...texts].filter((t) => t && /[A-Za-zÀ-ÿ]{2}/.test(t) && !KEEP.has(t) && !/^[\u0600-\u06FF\s.،:()؟!]+$/.test(t) && tr(t) === t);
 assert.deepStrictEqual(holes, [], 'French texts of the screens without Arabic: ' + JSON.stringify(holes));
 // the texts the screens write with code

@@ -1,6 +1,10 @@
-# Sites Launcher pour Windows
+# Madrassa pour Windows
 
 Version Windows de Sites Launcher (Electron).
+
+## Interface (étape 17)
+
+Nouvelle interface « application officielle » : bleu marine, or et vert comme l'application du téléphone. Barre latérale en trois groupes (**Pédagogie**, **Services officiels**, **Outils**) avec Réglages et la langue en bas ; accueil avec bandeau, raccourci **Cahier de texte** et tuiles par groupe ; thèmes clair et sombre ; arabe en miroir.
 
 ## Ce qui est déjà là
 - **Accueil** : Massar, Haraka, Tabligh, TGR, Nouveaux Apprentissages (chaque site dans sa fenêtre, la connexion est conservée).

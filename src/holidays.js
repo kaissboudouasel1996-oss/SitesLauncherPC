@@ -55,7 +55,7 @@ function ics(ids, now = new Date()) {
   const stamp = now.toISOString().replace(/[-:]/g, '').replace(/\.\d+Z$/, 'Z');
   const list = HOLIDAYS.filter((x) => x.start && (!ids || ids.includes(x.id)));
   if (!list.length) return null;
-  const lines = ['BEGIN:VCALENDAR', 'VERSION:2.0', 'PRODID:-//Sites Launcher//Vacances scolaires//FR', 'CALSCALE:GREGORIAN'];
+  const lines = ['BEGIN:VCALENDAR', 'VERSION:2.0', 'PRODID:-//Madrassa//Vacances scolaires//FR', 'CALSCALE:GREGORIAN'];
   list.forEach((x) => {
     lines.push('BEGIN:VEVENT', `UID:${x.id}-2026-2027@siteslauncher`, `DTSTAMP:${stamp}`,
       `DTSTART;VALUE=DATE:${compact(x.start)}`, `DTEND;VALUE=DATE:${compact(addDays(x.end, 1))}`,
