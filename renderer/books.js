@@ -68,39 +68,90 @@
   }));
 
   // ---------------------------------------------------------------- the reader
-  const R = { book: null, cur: 0, spread: false, zoom: 1, tone: 0, saveTimer: null, wheelAt: 0, marks: [], toast: null };
+  const R = { book: null, cur: 0, spread: true, zoom: 1, tone: 0, saveTimer: null, wheelAt: 0, marks: [], toast: null, ref: null, anim: null };
   const rd = $('bkReader');
+  const reduced = () => window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
   const normalize = (i) => { i = Math.max(0, Math.min(R.book.pages - 1, i)); return R.spread && i > 0 && i % 2 === 0 ? i - 1 : i; };
-  const visible = () => (R.spread && R.cur > 0 && R.cur + 1 < R.book.pages ? [R.cur, R.cur + 1] : [R.cur]);
+  /** The pages shown for a position. Two pages face to face like a real book: the cover alone on the right, then page pairs; a last page without partner stays on the left. */
+  function pagesFor(cur) {
+    if (!R.spread) return { L: null, R: cur };
+    if (cur <= 0) return { L: null, R: 0 };
+    return { L: cur, R: cur + 1 < R.book.pages ? cur + 1 : null };
+  }
+  const visible = () => { const p = pagesFor(R.cur); return [p.L, p.R].filter((x) => x !== null); };
 
   function fit() {
-    const stage = $('rStage'); const imgs = [...$('rPages').children];
+    const stage = $('rStage'); const imgs = [...$('rPages').querySelectorAll('img')];
     if (!imgs.length || imgs.some((i) => !i.naturalWidth)) return;
     const sw = stage.clientWidth - 8; const sh = stage.clientHeight - 8;
-    const maxH = Math.max(...imgs.map((i) => i.naturalHeight)); const sumW = imgs.reduce((a, i) => a + i.naturalWidth, 0);
-    const s = Math.min(sh / maxH, sw / sumW) * R.zoom;
-    imgs.forEach((i) => { i.style.width = i.naturalWidth * s + 'px'; i.style.height = i.naturalHeight * s + 'px'; });
+    if (R.spread) {
+      if (!R.ref) R.ref = { w: Math.max(...imgs.map((i) => i.naturalWidth)), h: Math.max(...imgs.map((i) => i.naturalHeight)) };
+      const s = Math.min(sh / R.ref.h, sw / (2 * R.ref.w)) * R.zoom;
+      $('rPages').querySelectorAll('.slot').forEach((sl) => { sl.style.width = R.ref.w * s + 'px'; sl.style.height = R.ref.h * s + 'px'; });
+    } else {
+      const maxH = Math.max(...imgs.map((i) => i.naturalHeight)); const sumW = imgs.reduce((a, i) => a + i.naturalWidth, 0);
+      const s = Math.min(sh / maxH, sw / sumW) * R.zoom;
+      imgs.forEach((i) => { i.style.width = i.naturalWidth * s + 'px'; i.style.height = i.naturalHeight * s + 'px'; });
+    }
     stage.classList.toggle('zoomed', R.zoom > 1);
   }
 
   function render() {
     const box = $('rPages'); box.textContent = '';
-    visible().forEach((i) => { const img = el('img'); img.draggable = false; img.alt = ''; img.addEventListener('load', fit); img.src = url(R.book.id, i); box.appendChild(img); });
+    const mk = (i) => { const img = el('img'); img.draggable = false; img.alt = ''; img.addEventListener('load', fit); img.src = url(R.book.id, i); return img; };
+    const sl = pagesFor(R.cur);
+    box.classList.toggle('book', R.spread);
+    if (R.spread) {
+      const left = el('div', 'slot sl'); const right = el('div', 'slot sr');
+      if (sl.L !== null) left.appendChild(mk(sl.L));
+      if (sl.R !== null) right.appendChild(mk(sl.R));
+      box.append(left, right);
+    } else box.appendChild(mk(R.cur));
     fit();
     for (const i of [R.cur - 2, R.cur - 1, R.cur + 2, R.cur + 3]) if (i >= 0 && i < R.book.pages) { const p = new Image(); p.src = url(R.book.id, i); } // the nearby pages are ready
-    const last = visible()[visible().length - 1];
-    $('rLabel').textContent = T(`Page ${R.cur + 1} sur ${R.book.pages}`).replace(/\d+/, (m) => (last !== R.cur ? `${R.cur + 1}-${last + 1}` : m));
+    const vis = visible(); const first = vis[0]; const last = vis[vis.length - 1];
+    $('rLabel').textContent = T(`Page ${first + 1} sur ${R.book.pages}`).replace(/\d+/, (m) => (last !== first ? `${first + 1}-${last + 1}` : m));
     $('rSeek').value = R.cur;
     const on = R.marks.includes(R.cur);
     $('rMark').textContent = on ? '★' : '☆'; $('rMark').classList.toggle('on', on);
     $('rStage').scrollTo(0, 0);
   }
 
+  // ---- the page turns like on the phone: the leaf is hinged on the spine and swings over, a shadow follows it
+  const TURN_MS = 650;
+  function finishAnim() { if (R.anim) { clearTimeout(R.anim.timer); R.anim.box.remove(); R.anim = null; } }
+  function animate(old, n) {
+    const first = R.spread ? $('rPages').querySelector('.slot.sr') : $('rPages').querySelector('img');
+    if (!first) return false;
+    const stage = $('rStage'); const sr = stage.getBoundingClientRect(); const fr = first.getBoundingClientRect();
+    if (!fr.width || !fr.height) return false;
+    const sw = fr.width; const sh = fr.height; const hx = fr.left - sr.left; const y = fr.top - sr.top; // hx: the spine (or the left edge of a single page)
+    const fwd = n > old;
+    const A = pagesFor(fwd ? old : n); const B = pagesFor(fwd ? n : old); // earlier / later position
+    R.cur = n; render(); // the real page is drawn under the animation
+    const box = el('div', 'flipbox'); box.style.perspectiveOrigin = `${hx}px 50%`;
+    const page = (idx, x) => { const d = el('div', 'pg'); d.style.cssText = `left:${x}px;top:${y}px;width:${sw}px;height:${sh}px`; if (idx !== null) { const im = el('img'); im.draggable = false; im.alt = ''; im.src = url(R.book.id, idx); d.appendChild(im); } return d; };
+    if (R.spread) { if (A.L !== null) box.appendChild(page(A.L, hx - sw)); if (B.R !== null) box.appendChild(page(B.R, hx)); } else box.appendChild(page(B.R, hx));
+    const leaf = el('div', 'leaf'); leaf.style.cssText = `left:${hx}px;top:${y}px;width:${sw}px;height:${sh}px;transform:rotateY(${fwd ? 0 : -180}deg)`;
+    const faceOf = (idx, cls) => { const f = el('div', cls); if (idx !== null) { const im = el('img'); im.draggable = false; im.alt = ''; im.src = url(R.book.id, idx); f.appendChild(im); } return f; };
+    leaf.appendChild(faceOf(A.R, 'face'));
+    if (R.spread && B.L !== null) leaf.appendChild(faceOf(B.L, 'face back'));
+    box.appendChild(leaf);
+    const cast = el('div', 'cast'); cast.style.cssText = `left:${R.spread ? hx - sw : hx}px;top:${y}px;width:${R.spread ? sw * 2 : sw}px;height:${sh}px`; box.appendChild(cast);
+    stage.appendChild(box);
+    void box.offsetWidth; // the start position is drawn before the move
+    requestAnimationFrame(() => { leaf.style.transform = `rotateY(${fwd ? -180 : 0}deg)`; });
+    R.anim = { box, timer: setTimeout(finishAnim, TURN_MS + 60) };
+    return true;
+  }
+
   function goTo(i) {
     const n = normalize(i);
     if (n === R.cur && $('rPages').children.length) return;
-    R.cur = n; render();
+    const old = R.cur; finishAnim();
+    const shown = old >= 0 && $('rPages').children.length && !rd.hidden;
+    if (!(shown && R.zoom === 1 && !reduced() && Math.abs(n - old) <= 2 && animate(old, n))) { R.cur = n; render(); }
     clearTimeout(R.saveTimer); R.saveTimer = setTimeout(() => window.api.books.setLast(R.book.id, R.cur), 300);
   }
   const next = () => { const i = R.spread ? (R.cur === 0 ? 1 : R.cur + 2) : R.cur + 1; if (i < R.book.pages) goTo(i); };
@@ -115,7 +166,7 @@
     const b = await window.api.books.open(id);
     if (!b) { $('bkMsg').textContent = 'Ce livre n\'a pas pu être ouvert.'; return; }
     R.book = b; R.marks = b.marks; R.tone = b.tone; R.zoom = 1;
-    R.spread = false; $('rSpread').classList.remove('on');
+    R.spread = true; R.ref = null; finishAnim(); $('rSpread').classList.add('on');
     $('rSeek').max = Math.max(1, b.pages - 1);
     $('rTitle').textContent = `${b.title} ${b.subtitle}`.trim();
     $('bkShelf').hidden = true; rd.hidden = false; setTone(R.tone);
@@ -141,7 +192,9 @@
   $('rBack').addEventListener('click', () => { leave(); showBooks(); });
   $('rPrev').addEventListener('click', prev); $('rNext').addEventListener('click', next);
   $('rZoomIn').addEventListener('click', () => zoom(1)); $('rZoomOut').addEventListener('click', () => zoom(-1));
-  $('rFull').addEventListener('click', () => { if (document.fullscreenElement) document.exitFullscreen(); else document.documentElement.requestFullscreen().catch(() => {}); });
+  const toggleFull = () => { if (document.fullscreenElement) document.exitFullscreen().catch(() => {}); else document.documentElement.requestFullscreen().catch(() => {}); };
+  $('rFull').addEventListener('click', toggleFull);
+  document.addEventListener('fullscreenchange', () => { if (!rd.hidden) rd.classList.toggle('nobars', !!document.fullscreenElement); finishAnim(); setTimeout(fit, 60); });
   $('rSpread').addEventListener('click', () => { R.spread = !R.spread; $('rSpread').classList.toggle('on', R.spread); const c = R.cur; R.cur = -1; goTo(c); });
   $('rMark').addEventListener('click', async () => {
     const now = await window.api.books.toggleMark(R.book.id, R.cur);
@@ -184,12 +237,13 @@
   document.addEventListener('keydown', (e) => {
     if (rd.hidden || $('dlgBook').open || /INPUT|TEXTAREA/.test((e.target.tagName || ''))) return;
     const k = e.key;
-    if (k === 'ArrowRight' || k === 'PageDown' || k === ' ') { e.preventDefault(); next(); }
+    if (k === ' ') { e.preventDefault(); toggleFull(); }
+    else if (k === 'ArrowRight' || k === 'PageDown') { e.preventDefault(); next(); }
     else if (k === 'ArrowLeft' || k === 'PageUp' || k === 'Backspace') { e.preventDefault(); prev(); }
     else if (k === 'Home') goTo(0); else if (k === 'End') goTo(R.book.pages - 1);
     else if (k === '+' || k === '=') zoom(1); else if (k === '-') zoom(-1);
     else if (k === 'b' || k === 'B') $('rMark').click();
-    else if (k === 'F11' || k === 'f') { e.preventDefault(); $('rFull').click(); }
+    else if (k === 'F11' || k === 'f') { e.preventDefault(); toggleFull(); }
     else if (k === 'Escape' && !document.fullscreenElement) $('rBack').click();
   });
 })();

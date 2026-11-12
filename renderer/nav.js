@@ -1,7 +1,11 @@
 'use strict';
-const pages = ['home', 'fiche', 'classes', 'notes', 'timetable', 'cahier', 'calendar', 'backup', 'auth', 'logins', 'files', 'books', 'settings'];
+const pages = ['home', 'fiche', 'classes', 'notes', 'timetable', 'cahier', 'calendar', 'backup', 'auth', 'logins', 'files', 'books', 'settings', 'split'];
 
+let current = 'home';
 function showPage(name) {
+  current = name;
+  const tb = document.getElementById('topbar'); if (tb) { tb.hidden = name === 'home'; document.getElementById('tbSettings').hidden = name === 'settings'; }
+  const m = document.querySelector('main'); if (m) m.scrollTop = 0;
   pages.forEach((p) => { document.getElementById('page-' + p).hidden = p !== name; });
   document.querySelectorAll('.nav[data-page]').forEach((b) => b.classList.toggle('on', b.dataset.page === name));
   if (name === 'classes' && window.showClassList) window.showClassList();
@@ -16,12 +20,14 @@ function showPage(name) {
   if (name === 'calendar' && window.showCalendar) window.showCalendar();
   if (name === 'cahier' && window.showCahier) window.showCahier();
   if (name === 'timetable' && window.showTimetable) window.showTimetable();
+  if (name === 'split' && window.showSplit) window.showSplit();
 }
 
 document.querySelectorAll('.nav[data-page]').forEach((b) => b.addEventListener('click', () => showPage(b.dataset.page)));
 document.querySelectorAll('[data-site]').forEach((b) => b.addEventListener('click', () => window.api.openSite(b.dataset.site)));
 document.querySelectorAll('[data-go]').forEach((b) => b.addEventListener('click', () => showPage(b.dataset.go)));
 window.api.on('nav', (name) => { if (pages.includes(name)) showPage(name); });
+window.showPage = showPage;
 
 (window.I18N.ready || Promise.resolve()).then(() => {
   const d = new Date().toLocaleDateString(window.I18N.locale(), { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });

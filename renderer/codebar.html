@@ -1,0 +1,31 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'unsafe-inline'; script-src 'self'">
+<title>Codes</title>
+<style>
+:root { --bg:#ffffff; --card:#f3f6fb; --line:#d9dee7; --text:#16243a; --muted:#5f6b7e; --accent:#1c5aa6; --warn:#d64545; --gold:#c9a227; }
+@media (prefers-color-scheme: dark) { :root { --bg:#101826; --card:#192338; --line:#2a3650; --text:#e6ebf5; --muted:#97a3b8; --accent:#7cb0ff; } }
+* { box-sizing: border-box; }
+html, body { margin: 0; height: 100%; overflow: hidden; background: var(--bg); color: var(--text); font: 14px "Segoe UI", system-ui, Tahoma, sans-serif; }
+body { border-top: 3px solid var(--gold); display: flex; align-items: center; gap: 12px; padding: 6px 14px; box-shadow: 0 -6px 18px rgba(15,47,87,.18); }
+.hint { flex: none; max-width: 190px; color: var(--muted); font-size: 12.5px; line-height: 1.35; }
+.strip { flex: 1; min-width: 0; display: flex; gap: 10px; overflow-x: auto; padding: 4px 2px; }
+.chip { flex: none; min-width: 150px; text-align: start; font: inherit; color: var(--text); background: var(--card); border: 1px solid var(--line); border-radius: 12px; padding: 7px 14px 8px; cursor: pointer; transition: border-color .12s, transform .12s; }
+.chip:hover { border-color: var(--accent); transform: translateY(-1px); }
+.name { display: block; color: var(--muted); font-size: 12px; max-width: 220px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.code { display: block; font: 700 25px ui-monospace, Consolas, monospace; letter-spacing: 2px; color: var(--accent); margin: 1px 0 5px; }
+.code.warn { color: var(--warn); }
+.track { height: 5px; border-radius: 3px; background: var(--line); overflow: hidden; } .fill { height: 100%; background: var(--accent); transition: width .9s linear; } .warn + .track .fill { background: var(--warn); }
+.empty { color: var(--muted); }
+.copied { position: fixed; top: 6px; inset-inline-end: 14px; background: #1e7b4e; color: #fff; padding: 3px 12px; border-radius: 14px; font-size: 12px; opacity: 0; transition: opacity .2s; } .copied.on { opacity: 1; }
+</style>
+</head>
+<body>
+<span class="hint" id="hint"></span>
+<div class="strip" id="strip"></div>
+<span class="copied" id="copied"></span>
+<script src="codebar.js"></script>
+</body>
+</html>

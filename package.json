@@ -1,13 +1,13 @@
 {
   "name": "sites-launcher-pc",
-  "version": "7.5.0",
+  "version": "7.6.0",
   "description": "Madrassa pour Windows",
   "main": "main.js",
   "author": "Madrassa",
   "license": "UNLICENSED",
   "scripts": {
     "start": "electron .",
-    "test": "node test/test.js && node test/test_classes.js && node test/test_notes_timetable.js && node test/test_cahier_seating.js && node test/test_holidays.js && node test/test_backup.js && node test/test_builder.js && node test/test_books.js && node test/test_files.js && node test/test_ocr.js && node test/test_qr.js && node test/test_sites.js && node test/test_totp.js && node test/test_i18n.js && node test/test_main.js",
+    "test": "node test/test.js && node test/test_classes.js && node test/test_notes_timetable.js && node test/test_cahier_seating.js && node test/test_holidays.js && node test/test_backup.js && node test/test_builder.js && node test/test_books.js && node test/test_files.js && node test/test_ocr.js && node test/test_qr.js && node test/test_sites.js && node test/test_totp.js && node test/test_tile3.js && node test/test_codebar.js && node test/test_i18n.js && node test/test_main.js",
     "dist": "electron-builder --win --x64 --publish never",
     "release": "electron-builder --win --x64 --publish always"
   },

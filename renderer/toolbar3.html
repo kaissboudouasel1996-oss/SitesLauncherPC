@@ -1,0 +1,22 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'unsafe-inline'; script-src 'self'">
+<title>Espace 3 fenêtres</title>
+<style>
+* { box-sizing: border-box; }
+html, body { margin: 0; height: 100%; overflow: hidden; user-select: none; background: linear-gradient(90deg, #0c2748, #1c5296); color: #fff; font: 14px "Segoe UI", system-ui, Tahoma, sans-serif; }
+body { display: flex; align-items: center; gap: 8px; padding: 0 12px; border-bottom: 2px solid #c9a227; }
+.title { font-weight: 700; letter-spacing: .04em; margin-inline-end: auto; color: #f3d675; }
+button { display: inline-flex; align-items: center; gap: 6px; font: inherit; font-weight: 600; color: #fff; cursor: pointer; background: rgba(255,255,255,.12); border: 1px solid rgba(255,255,255,.28); border-radius: 20px; padding: 6px 16px; }
+button:hover { background: rgba(255,255,255,.24); }
+button.x { padding: 6px 11px; }
+</style>
+</head>
+<body>
+<span class="title" id="title"></span>
+<button id="back"></button><button id="home"></button><button id="tile"></button><button id="close" class="x">✕</button>
+<script src="toolbar3.js"></script>
+</body>
+</html>

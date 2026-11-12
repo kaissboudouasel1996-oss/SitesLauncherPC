@@ -2,9 +2,12 @@
 
 Version Windows de Sites Launcher (Electron).
 
-## Interface (étape 17)
+## Interface et nouveautés (étapes 17 à 19)
 
-Nouvelle interface « application officielle » : bleu marine, or et vert comme l'application du téléphone. Barre latérale en trois groupes (**Pédagogie**, **Services officiels**, **Outils**) avec Réglages et la langue en bas ; accueil avec bandeau, raccourci **Cahier de texte** et tuiles par groupe ; thèmes clair et sombre ; arabe en miroir.
+- **Interface** « application officielle » : bleu marine, or et vert, comme le téléphone. Plus de barre latérale : l'accueil montre le bandeau (avec **Réglages**), le raccourci **Cahier de texte** et les tuiles des trois groupes (**Pédagogie**, **Services officiels**, **Outils**). Sur les autres pages, une barre en haut propose **← Accueil** et **Réglages**. La langue se change dans Réglages.
+- **Codes Authenticator sous les sites** (Massar, Haraka, Tabligh, TGR) : une barre en bas de la fenêtre du site montre les codes (le compte du site en premier) avec le compte à rebours. Un clic tape le code dans le champ choisi et le copie (effacé du presse-papiers après une minute). La barre disparaît quand le site a reçu le code, et revient si une page en redemande un.
+- **Livres** : deux pages face à face comme un vrai livre (couverture seule à droite, puis les pages deux par deux), animation de page qui se tourne, **Espace** = plein écran sans barres (Windows compris), Espace de nouveau = retour. Pages : flèches, molette, clic sur les côtés.
+- **Espace 3 fenêtres** (Outils) : ouvre le vrai Word, PowerPoint et le dossier Bureau, placés à gauche (Word, toute la hauteur), en haut à droite (PowerPoint) et en bas à droite (Bureau). Copier-coller de texte et de fichiers entre eux comme d'habitude. Une barre en haut de l'écran : **Retour**, **Accueil**, **Réorganiser**. Les fenêtres restent ouvertes quand on retourne à l'accueil. Nécessite Word et PowerPoint installés.
 
 ## Ce qui est déjà là
 - **Accueil** : Massar, Haraka, Tabligh, TGR, Nouveaux Apprentissages (chaque site dans sa fenêtre, la connexion est conservée).

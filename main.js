@@ -1,5 +1,5 @@
 'use strict';
-const { app, BrowserWindow, ipcMain, dialog, shell, nativeImage, Menu, Notification, safeStorage, clipboard, session, protocol, nativeTheme } = require('electron');
+const { app, BrowserWindow, ipcMain, dialog, shell, nativeImage, Menu, Notification, safeStorage, clipboard, session, protocol, nativeTheme, WebContentsView, screen } = require('electron');
 const fs = require('fs');
 const path = require('path');
 const ppt = require('./src/ppt');
@@ -18,6 +18,8 @@ const { ClassStore, defaultYear } = require('./src/classes');
 const { Vault } = require('./src/vault');
 const { SITES, allowedHost, CredentialStore, autofillScript, fillCodeScript } = require('./src/sites');
 const totp = require('./src/totp');
+const codebar = require('./src/codebar');
+const tile3 = require('./src/tile3');
 const filesLib = require('./src/files');
 const i18nLib = require('./renderer/i18n-lib');
 const AR = i18nLib.make(require('./src/data/ar.json'));
@@ -219,6 +221,60 @@ function siteMenu(w, key) {
   ]);
 }
 
+// ---------- the Authenticator codes under the window of a site (like on the phone) ----------
+const codeBars = new Map(); // webContents id of a strip -> its site window
+function attachCodeBar(w, key) {
+  const site = SITES[key];
+  if (!site || !site.codes || !WebContentsView) return null;
+  const st = { view: null, timer: null, shown: false, css: null };
+  const place = () => { if (!st.view || w.isDestroyed()) return; const [cw, ch] = w.getContentSize(); st.view.setBounds({ x: 0, y: Math.max(0, ch - codebar.BAR_HEIGHT), width: cw, height: codebar.BAR_HEIGHT }); };
+  const push = () => {
+    if (!st.view || st.view.webContents.isDestroyed()) return;
+    const items = codebar.order(accounts.codes(), site.title).map((c) => ({ id: c.id, name: c.name, pretty: codebar.pretty(c.code), remaining: c.remaining, period: c.period }));
+    st.view.webContents.send('codebar:update', { items, rtl: lang() === 'ar', texts: {
+      hint: T('Cliquez sur un code : il est tapé dans le champ choisi et copié.'),
+      empty: T('Aucun compte. Ajoutez-en dans Authenticator, sur l’accueil.'), copied: T('Copié') } });
+  };
+  const pad = () => { // the page is lifted by the height of the strip so that nothing is hidden under it
+    if (w.isDestroyed()) return;
+    const old = st.css; st.css = null;
+    if (old) w.webContents.removeInsertedCSS(old).catch(() => {});
+    w.webContents.insertCSS(`html{padding-bottom:${codebar.BAR_HEIGHT}px !important}`).then((k) => { st.css = k; }).catch(() => {});
+  };
+  const show = () => {
+    if (st.shown || w.isDestroyed()) return;
+    if (!st.view) {
+      st.view = new WebContentsView({ webPreferences: { preload: path.join(__dirname, 'preload-codebar.js'), contextIsolation: true, nodeIntegration: false, sandbox: true } });
+      codeBars.set(st.view.webContents.id, w);
+      st.view.webContents.loadFile(path.join(__dirname, 'renderer', 'codebar.html'));
+    }
+    w.contentView.addChildView(st.view); st.shown = true; place(); push(); pad();
+    st.timer = setInterval(push, 1000);
+  };
+  const hide = () => {
+    if (!st.shown) return;
+    st.shown = false; clearInterval(st.timer);
+    try { w.contentView.removeChildView(st.view); } catch (e) { /* window closing */ }
+    if (st.css) { w.webContents.removeInsertedCSS(st.css).catch(() => {}); st.css = null; }
+  };
+  const check = () => { // after each page: the strip comes back when the page asks for a code again
+    w.webContents.executeJavaScript(codebar.WATCH_JS).then((asking) => { if (asking && !st.shown) show(); else if (st.shown) pad(); }).catch(() => {});
+  };
+  w.on('resize', place);
+  w.on('closed', () => { clearInterval(st.timer); if (st.view) codeBars.delete(st.view.webContents.id); });
+  w.webContents.on('did-finish-load', check);
+  w.webContents.on('did-navigate-in-page', check);
+  show();
+  return { hide };
+}
+ipcMain.handle('codebar:use', (e, id) => {
+  const w = codeBars.get(e.sender.id);
+  if (!w || w.isDestroyed()) return false;
+  typeCode(w, String(id));
+  try { w.webContents.focus(); } catch (err) { /* ignore */ }
+  return true;
+});
+
 ipcMain.handle('sites:open', (_e, key) => {
   const site = SITES[key];
   if (!site) return false;
@@ -227,6 +283,7 @@ ipcMain.handle('sites:open', (_e, key) => {
     width: 1200, height: 800, title: site.title, autoHideMenuBar: false, icon: path.join(__dirname, 'assets', 'icon.png'),
     webPreferences: { partition: 'persist:sites', contextIsolation: true, nodeIntegration: false, sandbox: true }
   });
+  const strip = attachCodeBar(w, key);
   w.setMenu(siteMenu(w, key));
   w.on('focus', () => { if (!w.isDestroyed()) w.setMenu(siteMenu(w, key)); }); // the list of codes follows the accounts
   w.webContents.setWindowOpenHandler(({ url }) => { w.loadURL(url); return { action: 'deny' }; });
@@ -236,11 +293,59 @@ ipcMain.handle('sites:open', (_e, key) => {
   // the page script tells when « Connexion » was pressed for you
   w.webContents.on('console-message', (...args) => {
     const msg = args[0] && typeof args[0] === 'object' && args[0].message !== undefined ? args[0].message : args[2];
+    if (msg === '__madrassa_code_submitted__' && strip) strip.hide(); // the site got the code: the codes go away
     if (msg === '__madrassa_autoclicked__') { const p = prefs(); p['lastauto_' + site.title] = Date.now(); setPrefs(p); }
   });
   w.loadURL(site.url);
   siteWins[key] = w;
   return true;
+});
+
+// ---------- Espace 3 fenêtres : Word | PowerPoint / Bureau, placed on the screen, with a toolbar that stays on top ----------
+let toolbar3 = null;
+const splitStatePath = () => path.join(app.getPath('userData'), 'espace3.json');
+function hideToolbar3() { if (toolbar3 && !toolbar3.isDestroyed()) toolbar3.hide(); }
+function showToolbar3(r) {
+  if (!toolbar3 || toolbar3.isDestroyed()) {
+    toolbar3 = new BrowserWindow({
+      x: r.x, y: r.y, width: r.width, height: r.height, frame: false, resizable: false, movable: false, minimizable: false, maximizable: false, fullscreenable: false,
+      skipTaskbar: true, alwaysOnTop: true, show: false, title: 'Madrassa', backgroundColor: '#0f2f57',
+      webPreferences: { preload: path.join(__dirname, 'preload-toolbar3.js'), contextIsolation: true, nodeIntegration: false, sandbox: true }
+    });
+    toolbar3.setMenu(null);
+    toolbar3.loadFile(path.join(__dirname, 'renderer', 'toolbar3.html'));
+  } else toolbar3.setBounds(r);
+  toolbar3.setAlwaysOnTop(true, 'screen-saver');
+  toolbar3.showInactive();
+}
+async function splitRun(mode, extra, minimize) {
+  if (process.platform !== 'win32' || !screen || !win || win.isDestroyed()) return { ok: false, error: T('Cet outil fonctionne seulement sous Windows.') };
+  const area = screen.getDisplayMatching(win.getBounds()).workArea; // in device-independent pixels
+  const L = tile3.layout(area);
+  const phys = (r) => { const p = screen.dipToScreenRect(null, r); return { x: p.x, y: p.y, width: p.width, height: p.height }; };
+  showToolbar3(L.toolbar);
+  if (minimize && !win.isMinimized()) win.minimize();
+  const r = await tile3.run(mode, { word: phys(L.word), ppt: phys(L.ppt), desk: phys(L.desk) }, Object.assign({ statePath: splitStatePath() }, extra));
+  if (!r.ok) { hideToolbar3(); showMain('split'); r.error = T(r.error); }
+  return r;
+}
+ipcMain.handle('split:start', () => splitRun('start', {}, true));
+ipcMain.handle('split:tile', () => splitRun('tile', {}, true));
+async function splitOpen(kind) {
+  if (process.platform !== 'win32') return { ok: false, error: T('Cet outil fonctionne seulement sous Windows.') };
+  const filters = kind === 'word' ? [{ name: 'Word', extensions: ['docx', 'doc', 'dotx', 'rtf', 'odt'] }] : [{ name: 'PowerPoint', extensions: ['pptx', 'ppt', 'ppsx', 'pps', 'potx', 'odp'] }];
+  const r = await dialog.showOpenDialog(win, { title: T(kind === 'word' ? 'Ouvrir un document Word…' : 'Ouvrir un PowerPoint…'), properties: ['openFile'], filters });
+  if (r.canceled || !r.filePaths.length) return { ok: true, canceled: true };
+  return splitRun('open', { kind, file: r.filePaths[0] }, true);
+}
+ipcMain.handle('split:openWord', () => splitOpen('word'));
+ipcMain.handle('split:openPpt', () => splitOpen('ppt'));
+ipcMain.handle('split:texts', () => ({ rtl: lang() === 'ar', title: T('Espace 3 fenêtres'), back: T('Retour'), home: T('Accueil'), tile: T('Réorganiser'), hide: T('Masquer la barre') }));
+ipcMain.handle('split:toolbar', (_e, action) => {
+  if (action === 'tile') { splitRun('tile', {}, false); return true; }
+  if (action === 'close') { hideToolbar3(); return true; }
+  if (action === 'back' || action === 'home') { hideToolbar3(); showMain(action === 'home' ? 'home' : 'split'); return true; } // the three windows stay open
+  return false;
 });
 
 // ---------- settings: theme, updates, data folder ----------

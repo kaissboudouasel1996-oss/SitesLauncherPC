@@ -17,6 +17,7 @@ contextBridge.exposeInMainWorld('api', {
   update: { check: call('update:check'), install: call('update:install') },
   books: { list: call('books:list'), open: call('books:open'), setLast: call('books:setLast'), toggleMark: call('books:toggleMark'), setTone: call('books:setTone'), importPages: call('books:importPages'), importFolder: call('books:importFolder'), add: call('books:add'), remove: call('books:remove') },
   lang: { get: call('lang:get'), set: call('lang:set') },
+  split: { start: call('split:start'), tile: call('split:tile'), openWord: call('split:openWord'), openPpt: call('split:openPpt') },
   files: { list: call('files:list'), open: call('files:open'), reveal: call('files:reveal'), folder: call('files:folder'), remove: call('files:delete'), add: call('files:add') },
   logins: { list: call('logins:list'), save: call('logins:save'), remove: call('logins:delete') },
   auth: { fromImage: call('auth:fromImage'), codes: call('auth:codes'), add: call('auth:add'), remove: call('auth:remove') },
